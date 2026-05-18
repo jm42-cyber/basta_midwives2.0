@@ -1,0 +1,19 @@
+.maternal-care-modal input:focus,
+.maternal-care-modal select:focus,
+.maternal-care-modal textarea:focus {
+  outline: none !important;
+}
+
+.maternal-care-modal input.border-red-300,
+.maternal-care-modal select.border-red-300,
+.maternal-care-modal textarea.border-red-300 {
+  border-color: #fca5a5 !important;
+  border-width: 2px !important;
+}
+
+.maternal-care-modal input.border-red-300:focus,
+.maternal-care-modal select.border-red-300:focus,
+.maternal-care-modal textarea.border-red-300:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
