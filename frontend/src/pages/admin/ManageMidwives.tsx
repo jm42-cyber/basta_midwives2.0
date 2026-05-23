@@ -38,6 +38,7 @@ interface Midwife {
   role: string;
   status: 'pending' | 'approved' | 'rejected' | 'inactive';
   created_at: string;
+  barangays?: Array<{ id: number; name: string }>;
 }
 
 const ManageMidwives: React.FC = () => {
@@ -140,7 +141,28 @@ const ManageMidwives: React.FC = () => {
       const response = await api.get('/users', {
         params: { role: 'midwife' }
       });
-      setMidwives(response.data.data || []);
+      const midwivesData = response.data.data || [];
+      
+      // Fetch barangays for each midwife (except pending ones)
+      const midwivesWithBarangays = await Promise.all(
+        midwivesData.map(async (midwife: Midwife) => {
+          if (midwife.status === 'pending') {
+            return { ...midwife, barangays: [] };
+          }
+          try {
+            const barangaysResponse = await api.get(`/users/${midwife.id}/barangays`);
+            return {
+              ...midwife,
+              barangays: barangaysResponse.data.data || barangaysResponse.data || []
+            };
+          } catch (error) {
+            console.error(`Error fetching barangays for midwife ${midwife.id}:`, error);
+            return { ...midwife, barangays: [] };
+          }
+        })
+      );
+      
+      setMidwives(midwivesWithBarangays);
     } catch (error) {
       console.error('Error fetching midwives:', error);
       toast.error('Failed to load midwives');
@@ -743,6 +765,12 @@ const ManageMidwives: React.FC = () => {
                     </th>
                     <th className="px-6 py-4 text-xs font-semibold tracking-wider text-left text-gray-500 uppercase">
                       <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4" />
+                        Assigned Barangays
+                      </div>
+                    </th>
+                    <th className="px-6 py-4 text-xs font-semibold tracking-wider text-left text-gray-500 uppercase">
+                      <div className="flex items-center gap-2">
                         <UserCheck className="w-4 h-4" />
                         Status
                       </div>
@@ -779,6 +807,25 @@ const ManageMidwives: React.FC = () => {
                               {midwife.contact_number}
                             </div>
                           </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          {midwife.status === 'pending' ? (
+                            <span className="text-xs text-gray-400 italic">Not assigned yet</span>
+                          ) : midwife.barangays && midwife.barangays.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {midwife.barangays.map((barangay) => (
+                                <span
+                                  key={barangay.id}
+                                  className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded-md text-xs font-medium"
+                                >
+                                  <MapPin className="w-3 h-3" />
+                                  {barangay.name}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-gray-400 italic">No barangays assigned</span>
+                          )}
                         </td>
                         <td className="px-6 py-5">
                           <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${statusBadge.bg} ${statusBadge.text}`}>
@@ -1256,6 +1303,28 @@ const ManageMidwives: React.FC = () => {
                 <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                   <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Role</p>
                   <p className="text-sm font-medium text-gray-900 capitalize">{selectedMidwife.role}</p>
+                </div>
+
+                {/* Assigned Barangays */}
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 md:col-span-2">
+                  <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Assigned Barangays</p>
+                  {selectedMidwife.status === 'pending' ? (
+                    <p className="text-sm text-gray-400 italic">Not assigned yet (pending approval)</p>
+                  ) : selectedMidwife.barangays && selectedMidwife.barangays.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {selectedMidwife.barangays.map((barangay) => (
+                        <span
+                          key={barangay.id}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-sm font-medium"
+                        >
+                          <MapPin className="w-4 h-4" />
+                          {barangay.name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400 italic">No barangays assigned</p>
+                  )}
                 </div>
 
                 <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 md:col-span-2">

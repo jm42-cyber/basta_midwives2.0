@@ -28,6 +28,7 @@ export default function SeniorCitizenDashboardPage() {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const recordsPerPage = 20;
   const [currentStep, setCurrentStep] = useState(1);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -42,13 +43,16 @@ export default function SeniorCitizenDashboardPage() {
   useEffect(() => {
     fetchRecords();
     fetchBarangays();
-  }, []);
+  }, [currentPage]);
 
   const fetchRecords = async () => {
     try {
       setLoading(true);
-      const { data } = await seniorCitizenService.getAll({ status: 'active' });
+      const params: any = { page: currentPage };
+      if (searchTerm) params.search = searchTerm;
+      const { data } = await seniorCitizenService.getAll({ status: 'active', ...params });
       setRecords(data.data);
+      setTotalPages(data.last_page || 1);
     } catch (error) {
       console.error('Failed to fetch records:', error);
     } finally {
@@ -190,10 +194,6 @@ export default function SeniorCitizenDashboardPage() {
     return fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       record.barangay?.name.toLowerCase().includes(searchTerm.toLowerCase());
   });
-
-  const totalPages = Math.ceil(filteredRecords.length / recordsPerPage);
-  const startIndex = (currentPage - 1) * recordsPerPage;
-  const paginatedRecords = filteredRecords.slice(startIndex, startIndex + recordsPerPage);
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -339,7 +339,7 @@ export default function SeniorCitizenDashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {paginatedRecords.map((record) => (
+                  {filteredRecords.map((record) => (
                     <tr key={record.id} className="transition-all duration-200 hover:bg-orange-50/30">
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
@@ -392,51 +392,51 @@ export default function SeniorCitizenDashboardPage() {
         </div>
 
         {/* Pagination */}
-        {!loading && paginatedRecords.length > 0 && totalPages > 1 && (
+        {!loading && filteredRecords.length > 0 && totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 mt-6">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
               className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              Previous
+              <ChevronLeft className="w-4 h-4" />
             </button>
-            
-            {[...Array(totalPages)].map((_, index) => {
-              const pageNumber = index + 1;
-              if (
-                pageNumber === 1 ||
-                pageNumber === totalPages ||
-                (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
-              ) {
-                return (
-                  <button
-                    key={pageNumber}
-                    onClick={() => handlePageChange(pageNumber)}
-                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
-                      currentPage === pageNumber
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    {pageNumber}
-                  </button>
-                );
-              } else if (
-                pageNumber === currentPage - 2 ||
-                pageNumber === currentPage + 2
-              ) {
-                return <span key={pageNumber} className="px-2 text-gray-500">...</span>;
-              }
-              return null;
-            })}
-            
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              Next
+              
+              {[...Array(totalPages)].map((_, index) => {
+                const pageNumber = index + 1;
+                if (
+                  pageNumber === 1 ||
+                  pageNumber === totalPages ||
+                  (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                ) {
+                  return (
+                    <button
+                      key={pageNumber}
+                      onClick={() => handlePageChange(pageNumber)}
+                      className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
+                        currentPage === pageNumber
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  );
+                } else if (
+                  pageNumber === currentPage - 2 ||
+                  pageNumber === currentPage + 2
+                ) {
+                  return <span key={pageNumber} className="px-2 text-gray-500">...</span>;
+                }
+                return null;
+              })}
+              
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         )}
@@ -557,7 +557,7 @@ export default function SeniorCitizenDashboardPage() {
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 {/* Step 1: Personal & Contact Information */}
                 {(currentStep === 1 || modalMode === 'view') && (
-                  <>
+                  <div>
                 {/* Personal Information */}
                 <div className="p-6 border border-gray-200 rounded-xl bg-gradient-to-br from-blue-50/50 to-purple-50/50">
                   <div className="flex items-center gap-2 mb-4">
@@ -787,12 +787,12 @@ export default function SeniorCitizenDashboardPage() {
                     </button>
                   </div>
                 )}
-                </>
+                </div>
               )}
 
               {/* Step 2: Vitals & Chronic Conditions */}
               {(currentStep === 2 || modalMode === 'view') && (
-                <>
+                <div>
                 {/* Vital Signs */}
                 <div className="p-6 border border-gray-200 rounded-xl bg-gradient-to-br from-cyan-50/50 to-sky-50/50">
                   <div className="flex items-center gap-2 mb-4">
@@ -1006,12 +1006,12 @@ export default function SeniorCitizenDashboardPage() {
                     </button>
                   </div>
                 )}
-                </>
+                </div>
               )}
 
               {/* Step 3: Medications & Screenings */}
               {(currentStep === 3 || modalMode === 'view') && (
-                <>
+                <div>
                 {/* Medications */}
                 <div className="p-6 border border-gray-200 rounded-xl bg-gradient-to-br from-purple-50/50 to-violet-50/50">
                   <div className="flex items-center gap-2 mb-4">
@@ -1196,12 +1196,12 @@ export default function SeniorCitizenDashboardPage() {
                     </button>
                   </div>
                 )}
-                </>
+                </div>
               )}
 
               {/* Step 4: Social Support & Nutrition */}
               {(currentStep === 4 || modalMode === 'view') && (
-                <>
+                <div>
                 {/* Social Support */}
                 <div className="p-6 border border-gray-200 rounded-xl bg-gradient-to-br from-pink-50/50 to-rose-50/50">
                   <div className="flex items-center gap-2 mb-4">
@@ -1463,7 +1463,7 @@ export default function SeniorCitizenDashboardPage() {
                     </button>
                   </div>
                 )}
-                </>
+                </div>
               )}
               </form>
             </motion.div>

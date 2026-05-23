@@ -394,14 +394,17 @@ export default function MidwifeDashboard() {
                   </div>
                   <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
                 </div>
-                <button className="text-sm font-semibold text-primary-600 hover:text-primary-700">
+                <button 
+                  onClick={() => navigate('/dashboard/patients')}
+                  className="text-sm font-semibold text-primary-600 hover:text-primary-700"
+                >
                   View All
                 </button>
               </div>
 
-              <div className={`flex-1 overflow-y-auto ${recentActivities.length === 0 ? 'flex items-center justify-center' : 'space-y-3'}`}>
+              <div className={`flex-1 overflow-y-auto ${recentActivities.length === 0 ? 'flex items-center justify-center' : 'space-y-2'}`}>
                 {recentActivities.length > 0 ? (
-                  recentActivities.map((activity, index) => {
+                  recentActivities.slice(0, 5).map((activity, index) => {
                     const Icon = getActivityIcon(activity.type);
                     const colors = getActivityColor(activity.type);
 
@@ -411,21 +414,21 @@ export default function MidwifeDashboard() {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.7 + index * 0.1 }}
-                        className={`p-4 rounded-xl border ${colors.border} ${colors.bg} hover:shadow-md transition-all cursor-pointer group`}
+                        className={`p-3 rounded-lg border ${colors.border} ${colors.bg} hover:shadow-sm transition-all cursor-pointer group`}
                       >
-                        <div className="flex items-start gap-3">
-                          <div className={`w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm`}>
-                            <Icon className={`w-5 h-5 ${colors.text}`} />
+                        <div className="flex items-start gap-2">
+                          <div className={`w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm`}>
+                            <Icon className={`w-4 h-4 ${colors.text}`} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-gray-900 text-sm mb-1">{activity.title}</div>
-                            <div className="text-xs text-gray-600 mb-1">{activity.patient_name}</div>
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <div className="font-semibold text-gray-900 text-xs mb-0.5 leading-tight">{activity.title}</div>
+                            <div className="text-xs text-gray-600 mb-0.5">{activity.patient_name}</div>
+                            <div className="flex items-center gap-2 text-[10px] text-gray-500">
                               <MapPin className="w-3 h-3" />
-                              {activity.barangay_name}
+                              <span className="truncate">{activity.barangay_name}</span>
                             </div>
                           </div>
-                          <div className="text-xs text-gray-500">{getTimeAgo(activity.created_at)}</div>
+                          <div className="text-[10px] text-gray-500 flex-shrink-0">{getTimeAgo(activity.created_at)}</div>
                         </div>
                       </motion.div>
                     );
@@ -463,7 +466,7 @@ export default function MidwifeDashboard() {
 
               <div className={`flex-1 overflow-y-auto ${todayAppointments.length === 0 ? 'flex items-center justify-center' : 'space-y-2'}`}>
                 {todayAppointments.length > 0 ? (
-                  todayAppointments.map((appointment, index) => {
+                  todayAppointments.slice(0, 7).map((appointment, index) => {
                     const appointmentDate = new Date(appointment.date);
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
@@ -477,31 +480,31 @@ export default function MidwifeDashboard() {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.8 + index * 0.1 }}
-                        className={`flex items-start gap-2 pb-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 rounded-lg p-2 transition-all cursor-pointer group`}
+                        className={`flex items-start gap-2 pb-2 border-b border-gray-100 last:border-0 hover:bg-gray-50 rounded-lg p-2 transition-all cursor-pointer group`}
                       >
-                        <div className={`w-14 h-14 rounded-lg flex flex-col items-center justify-center flex-shrink-0 ${
+                        <div className={`w-12 h-12 rounded-lg flex flex-col items-center justify-center flex-shrink-0 ${
                           isToday 
                             ? 'bg-primary-100' 
                             : 'bg-gray-100'
                         }`}>
-                          <span className={`text-xs font-bold ${
+                          <span className={`text-[10px] font-bold ${
                             isToday ? 'text-primary-600' : 'text-gray-600'
                           }`}>{appointmentDate.toLocaleDateString('en-US', { month: 'short' })}</span>
-                          <span className={`text-lg font-bold ${
+                          <span className={`text-base font-bold ${
                             isToday ? 'text-primary-600' : 'text-gray-900'
                           }`}>{appointmentDate.getDate()}</span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2 mb-1">
-                            <p className="text-sm font-bold text-gray-900 leading-tight group-hover:text-primary-600 transition-colors">{appointment.patient}</p>
+                          <div className="flex items-start justify-between gap-2 mb-0.5">
+                            <p className="text-xs font-bold text-gray-900 leading-tight group-hover:text-primary-600 transition-colors">{appointment.patient}</p>
                             {isToday && (
                               <span className="px-2 py-0.5 bg-primary-100 text-primary-700 rounded text-[10px] font-bold flex-shrink-0">
                                 TODAY
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-gray-600 mb-1">{appointment.type}</p>
-                          <div className="flex items-center gap-3 text-xs text-gray-500">
+                          <p className="text-xs text-gray-600 mb-0.5">{appointment.type}</p>
+                          <div className="flex items-center gap-3 text-[10px] text-gray-500">
                             <div className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               <span className="font-medium">{appointment.time}</span>

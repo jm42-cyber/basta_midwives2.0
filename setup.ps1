@@ -1,49 +1,231 @@
-# ONE COMMAND SETUP (PowerShell)
+# MediMoms 2.0 - Automated Setup Script (PowerShell)
+# Run this script to automatically set up the entire project on ANY computer
 
-# Run this entire script at once - Copy and paste into PowerShell
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "  MediMoms 2.0 - Automated Setup" -ForegroundColor Green
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host ""
 
-# Navigate to project root
-cd C:\Users\JM\Documents\basta_midwives2.0
+# Get project root directory (wherever the script is located)
+$projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-# Backup old backend
-if (Test-Path backend) {
-    Rename-Item backend backend_old -Force
+Write-Host "Project Root: $projectRoot" -ForegroundColor Cyan
+Write-Host ""
+
+# ============================================
+# PREREQUISITE CHECKS
+# ============================================
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "  CHECKING PREREQUISITES" -ForegroundColor Green
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host ""
+
+$allPrereqsMet = $true
+
+# Check PHP
+Write-Host "Checking for PHP..." -ForegroundColor Yellow
+$phpExists = Get-Command php -ErrorAction SilentlyContinue
+if (-not $phpExists) {
+    Write-Host "X PHP not found!" -ForegroundColor Red
+    Write-Host "  Install from: https://windows.php.net/download/" -ForegroundColor Yellow
+    $allPrereqsMet = $false
+} else {
+    $phpVersion = php -v | Select-String -Pattern "PHP (\d+\.\d+)" | ForEach-Object { $_.Matches.Groups[1].Value }
+    Write-Host "✓ PHP $phpVersion found" -ForegroundColor Green
 }
 
-# Create fresh Laravel
-Write-Host "Creating fresh Laravel installation..." -ForegroundColor Green
-composer create-project laravel/laravel backend
+# Check Composer
+Write-Host "Checking for Composer..." -ForegroundColor Yellow
+$composerExists = Get-Command composer -ErrorAction SilentlyContinue
+if (-not $composerExists) {
+    Write-Host "X Composer not found!" -ForegroundColor Red
+    Write-Host "  Install from: https://getcomposer.org/download/" -ForegroundColor Yellow
+    $allPrereqsMet = $false
+} else {
+    Write-Host "✓ Composer found" -ForegroundColor Green
+}
 
-# Navigate to backend
-cd backend
+# Check Node.js
+Write-Host "Checking for Node.js..." -ForegroundColor Yellow
+$nodeExists = Get-Command node -ErrorAction SilentlyContinue
+if (-not $nodeExists) {
+    Write-Host "X Node.js not found!" -ForegroundColor Red
+    Write-Host "  Install from: https://nodejs.org/" -ForegroundColor Yellow
+    $allPrereqsMet = $false
+} else {
+    $nodeVersion = node -v
+    Write-Host "✓ Node.js $nodeVersion found" -ForegroundColor Green
+}
 
-# Install Sanctum
-Write-Host "Installing Laravel Sanctum..." -ForegroundColor Green
-composer require laravel/sanctum
-php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+# Check npm
+Write-Host "Checking for npm..." -ForegroundColor Yellow
+$npmExists = Get-Command npm -ErrorAction SilentlyContinue
+if (-not $npmExists) {
+    Write-Host "X npm not found!" -ForegroundColor Red
+    $allPrereqsMet = $false
+} else {
+    $npmVersion = npm -v
+    Write-Host "✓ npm $npmVersion found" -ForegroundColor Green
+}
 
-# Copy custom files
-Write-Host "Copying custom files..." -ForegroundColor Green
-Copy-Item ..\backend_old\database\migrations\2024*.php .\database\migrations\ -Force
-Copy-Item ..\backend_old\app\Models\*.php .\app\Models\ -Force
-Copy-Item ..\backend_old\app\Http\Controllers\*.php .\app\Http\Controllers\ -Force
-Copy-Item ..\backend_old\routes\api.php .\routes\api.php -Force
-Copy-Item ..\backend_old\database\seeders\DatabaseSeeder.php .\database\seeders\DatabaseSeeder.php -Force
+# Check MySQL
+Write-Host "Checking for MySQL..." -ForegroundColor Yellow
+$mysqlExists = Get-Command mysql -ErrorAction SilentlyContinue
+if (-not $mysqlExists) {
+    Write-Host "! MySQL not found in PATH" -ForegroundColor Yellow
+    Write-Host "  Make sure MySQL is installed and running" -ForegroundColor Yellow
+} else {
+    Write-Host "✓ MySQL found" -ForegroundColor Green
+}
 
-# Setup environment
-Copy-Item .env.example .env -Force
-php artisan key:generate
+Write-Host ""
 
-Write-Host "`n==================================" -ForegroundColor Cyan
-Write-Host "SETUP ALMOST COMPLETE!" -ForegroundColor Green
-Write-Host "==================================" -ForegroundColor Cyan
-Write-Host "`nNEXT STEPS:" -ForegroundColor Yellow
-Write-Host "1. Edit .env file - Set your database credentials" -ForegroundColor White
-Write-Host "2. Create database 'medimoms' in MySQL" -ForegroundColor White
-Write-Host "3. Run: php artisan migrate" -ForegroundColor White
-Write-Host "4. Run: php artisan db:seed" -ForegroundColor White
-Write-Host "5. Run: php artisan serve" -ForegroundColor White
-Write-Host "`nThen setup frontend in NEW terminal:" -ForegroundColor Yellow
-Write-Host "cd ..\frontend" -ForegroundColor White
-Write-Host "npm install" -ForegroundColor White
-Write-Host "npm run dev" -ForegroundColor White
+if (-not $allPrereqsMet) {
+    Write-Host "ERROR: Missing required prerequisites!" -ForegroundColor Red
+    Write-Host "Please install the missing software and run this script again." -ForegroundColor Yellow
+    Write-Host ""
+    Read-Host "Press Enter to exit"
+    exit 1
+}
+
+Write-Host "✓ All prerequisites met!" -ForegroundColor Green
+Write-Host ""
+
+# ============================================
+# BACKEND SETUP
+# ============================================
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "  BACKEND SETUP (Laravel)" -ForegroundColor Green
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host ""
+
+$backendPath = Join-Path $projectRoot "backend"
+Set-Location $backendPath
+
+# Install PHP dependencies
+Write-Host "Installing PHP dependencies (this may take a few minutes)..." -ForegroundColor Yellow
+composer install --no-interaction
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Failed to install PHP dependencies" -ForegroundColor Red
+    Read-Host "Press Enter to exit"
+    exit 1
+}
+Write-Host "✓ PHP dependencies installed" -ForegroundColor Green
+Write-Host ""
+
+# Create .env file if it doesn't exist
+if (-not (Test-Path ".env")) {
+    Write-Host "Creating .env file..." -ForegroundColor Yellow
+    Copy-Item ".env.example" ".env"
+    Write-Host "✓ .env file created" -ForegroundColor Green
+} else {
+    Write-Host "✓ .env file already exists" -ForegroundColor Green
+}
+Write-Host ""
+
+# Generate application key
+Write-Host "Generating application key..." -ForegroundColor Yellow
+php artisan key:generate --force
+Write-Host "✓ Application key generated" -ForegroundColor Green
+Write-Host ""
+
+# Create storage link
+Write-Host "Creating storage link..." -ForegroundColor Yellow
+php artisan storage:link
+Write-Host "✓ Storage link created" -ForegroundColor Green
+Write-Host ""
+
+# ============================================
+# FRONTEND SETUP
+# ============================================
+Write-Host ""
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "  FRONTEND SETUP (React + Vite)" -ForegroundColor Green
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host ""
+
+$frontendPath = Join-Path $projectRoot "frontend"
+Set-Location $frontendPath
+
+# Install Node dependencies
+Write-Host "Installing Node dependencies (this may take several minutes)..." -ForegroundColor Yellow
+npm install
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Failed to install Node dependencies" -ForegroundColor Red
+    Read-Host "Press Enter to exit"
+    exit 1
+}
+Write-Host "✓ Node dependencies installed" -ForegroundColor Green
+Write-Host ""
+
+# Create .env file if it doesn't exist
+if (-not (Test-Path ".env")) {
+    Write-Host "Creating .env file..." -ForegroundColor Yellow
+    Copy-Item ".env.example" ".env"
+    Write-Host "✓ .env file created" -ForegroundColor Green
+} else {
+    Write-Host "✓ .env file already exists" -ForegroundColor Green
+}
+Write-Host ""
+
+# ============================================
+# SETUP COMPLETE
+# ============================================
+Set-Location $projectRoot
+
+Write-Host ""
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "  SETUP COMPLETE!" -ForegroundColor Green
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host ""
+
+Write-Host "NEXT STEPS:" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "1. Configure Backend (.env)" -ForegroundColor White
+Write-Host "   - Edit: backend\.env" -ForegroundColor Gray
+Write-Host "   - Set database credentials:" -ForegroundColor Gray
+Write-Host "     DB_DATABASE=medimoms" -ForegroundColor Gray
+Write-Host "     DB_USERNAME=root" -ForegroundColor Gray
+Write-Host "     DB_PASSWORD=your_password" -ForegroundColor Gray
+Write-Host ""
+
+Write-Host "2. Create Database" -ForegroundColor White
+Write-Host "   - Open MySQL Workbench or phpMyAdmin" -ForegroundColor Gray
+Write-Host "   - Create database: medimoms" -ForegroundColor Gray
+Write-Host "   - Or run: mysql -u root -p -e 'CREATE DATABASE medimoms;'" -ForegroundColor Gray
+Write-Host ""
+
+Write-Host "3. Run Migrations" -ForegroundColor White
+Write-Host "   cd backend" -ForegroundColor Gray
+Write-Host "   php artisan migrate" -ForegroundColor Gray
+Write-Host "   php artisan db:seed" -ForegroundColor Gray
+Write-Host ""
+
+Write-Host "4. Start Backend Server" -ForegroundColor White
+Write-Host "   cd backend" -ForegroundColor Gray
+Write-Host "   php artisan serve" -ForegroundColor Gray
+Write-Host "   (Runs on http://localhost:8000)" -ForegroundColor Gray
+Write-Host ""
+
+Write-Host "5. Start Frontend Server (in NEW terminal)" -ForegroundColor White
+Write-Host "   cd frontend" -ForegroundColor Gray
+Write-Host "   npm run dev" -ForegroundColor Gray
+Write-Host "   (Runs on http://localhost:5173)" -ForegroundColor Gray
+Write-Host ""
+
+Write-Host "6. Access Application" -ForegroundColor White
+Write-Host "   - Frontend: http://localhost:5173" -ForegroundColor Gray
+Write-Host "   - Backend API: http://localhost:8000" -ForegroundColor Gray
+Write-Host ""
+
+Write-Host "Default Login Credentials:" -ForegroundColor Yellow
+Write-Host "   Admin: admin / admin123" -ForegroundColor Gray
+Write-Host "   Midwife: midwife1 / midwife123" -ForegroundColor Gray
+Write-Host ""
+
+Write-Host "For detailed instructions, see: SETUP_INSTRUCTIONS.md" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Happy coding! 🎉" -ForegroundColor Green
+Write-Host ""
+
+Read-Host "Press Enter to exit"

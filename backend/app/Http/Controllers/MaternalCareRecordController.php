@@ -39,7 +39,9 @@ class MaternalCareRecordController extends Controller
             $query->where('barangay_id', $request->barangay_id);
         }
 
-        $records = $query->orderBy('created_at', 'desc')->get();
+        // Use pagination instead of get()
+        $perPage = $request->get('per_page', 15); // Default 15 records per page
+        $records = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json($records);
     }

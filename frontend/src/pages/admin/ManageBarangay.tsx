@@ -165,16 +165,19 @@ const ManageBarangay: React.FC = () => {
   return (
     <AdminLayout>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="p-6">
+        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <div className="flex items-center justify-center w-16 h-16 shadow-lg bg-gradient-to-br from-emerald-500 via-green-600 to-teal-600 rounded-2xl">
               <MapPin className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-transparent bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text">Manage Barangays</h1>
+              <h1 className="text-3xl font-bold text-transparent bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text">
+                Manage Barangays
+              </h1>
               <p className="flex items-center gap-2 mt-1 text-gray-600">
-                <MapPin className="w-4 h-4" />
-                Comprehensive barangay information management system
+                <Building2 className="w-4 h-4" />
+                View and manage barangay information
               </p>
             </div>
           </div>
@@ -194,11 +197,11 @@ const ManageBarangay: React.FC = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Barangays</p>
+                <p className="text-sm text-gray-600">Total Barangays</p>
                 <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalBarangays}</p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center">
-                <Building2 className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-emerald-600" />
               </div>
             </div>
           </motion.div>
@@ -211,11 +214,11 @@ const ManageBarangay: React.FC = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Population</p>
+                <p className="text-sm text-gray-600">Total Population</p>
                 <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalPopulation.toLocaleString()}</p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+                <Users className="w-6 h-6 text-blue-600" />
               </div>
             </div>
           </motion.div>
@@ -228,17 +231,17 @@ const ManageBarangay: React.FC = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Active Captains</p>
+                <p className="text-sm text-gray-600">Active Captains</p>
                 <p className="text-3xl font-bold text-gray-900 mt-2">{stats.activeCaptains}</p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <UserCheck className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center">
+                <UserCheck className="w-6 h-6 text-purple-600" />
               </div>
             </div>
           </motion.div>
         </div>
 
-        {/* Search Bar */}
+        {/* Search and Filter Bar */}
         <div className="mb-6 flex gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -250,15 +253,30 @@ const ManageBarangay: React.FC = () => {
               className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent shadow-sm"
             />
           </div>
-          <button 
-            onClick={() => setShowFiltersModal(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
-          >
-            <Filter className="w-5 h-5 text-gray-600" />
-            <span className="font-medium text-gray-700">Filters</span>
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => setShowFiltersModal(!showFiltersModal)}
+              className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
+            >
+              <Filter className="w-5 h-5 text-gray-600" />
+              <span className="font-medium text-gray-700">Filters</span>
+            </button>
+            {showFiltersModal && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50"
+              >
+                <div className="px-4 py-2.5 text-sm text-gray-500">
+                  Filter options coming soon...
+                </div>
+              </motion.div>
+            )}
+          </div>
         </div>
 
+        {/* Barangays Table */}
         <div className="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
           {loading ? (
             <div className="p-16 text-center">
@@ -269,59 +287,56 @@ const ManageBarangay: React.FC = () => {
             </div>
           ) : filteredBarangays.length === 0 ? (
             <div className="p-16 text-center">
-              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full">
-                <MapPin className="w-8 h-8 text-gray-400" />
+              <div className="flex items-center justify-center w-20 h-20 mx-auto mb-4 bg-emerald-50 rounded-full">
+                <MapPin className="w-10 h-10 text-emerald-400" />
               </div>
-              <p className="text-lg text-gray-500">No barangays found</p>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">No barangays found</h3>
+              <p className="text-gray-600">Try adjusting your search or filters</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="border-b border-gray-200 bg-gray-900">
+                <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-4 text-xs font-semibold tracking-wider text-left text-white uppercase">
+                    <th className="px-6 py-4 text-xs font-semibold tracking-wider text-left text-gray-500 uppercase">
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4" />
                         Barangay Information
                       </div>
                     </th>
-                    <th className="px-6 py-4 text-xs font-semibold tracking-wider text-left text-white uppercase">
+                    <th className="px-6 py-4 text-xs font-semibold tracking-wider text-left text-gray-500 uppercase">
                       <div className="flex items-center gap-2">
                         <User className="w-4 h-4" />
                         Officials
                       </div>
                     </th>
-                    <th className="px-6 py-4 text-xs font-semibold tracking-wider text-left text-white uppercase">
+                    <th className="px-6 py-4 text-xs font-semibold tracking-wider text-left text-gray-500 uppercase">
                       <div className="flex items-center gap-2">
                         <Phone className="w-4 h-4" />
                         Contact
                       </div>
                     </th>
-                    <th className="px-6 py-4 text-xs font-semibold tracking-wider text-left text-white uppercase">
+                    <th className="px-6 py-4 text-xs font-semibold tracking-wider text-left text-gray-500 uppercase">
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4" />
                         Population
                       </div>
                     </th>
-                    <th className="px-6 py-4 text-xs font-semibold tracking-wider text-right text-white uppercase">Actions</th>
+                    <th className="px-6 py-4 text-xs font-semibold tracking-wider text-right text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {filteredBarangays.map((barangay) => (
-                    <tr key={barangay.id} className="transition-all duration-200 hover:bg-emerald-50/50 hover:shadow-sm">
+                    <tr key={barangay.id} className="hover:bg-emerald-50/40 transition-all duration-200">
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm bg-emerald-500">
+                          <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 text-white font-bold rounded-full flex items-center justify-center text-sm">
                             {barangay.name?.charAt(0)}
                           </div>
                           <div>
                             <div className="font-semibold text-gray-900">{barangay.name}</div>
                             <div className="text-sm text-gray-600">
-                              {barangay.address ? (
-                                barangay.address
-                              ) : (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500">N/A</span>
-                              )}
+                              {barangay.address || <span className="text-xs text-gray-400 italic">No address</span>}
                             </div>
                           </div>
                         </div>
@@ -329,38 +344,22 @@ const ManageBarangay: React.FC = () => {
                       <td className="px-6 py-5">
                         <div className="text-sm">
                           <div className="font-medium text-gray-900">
-                            {barangay.barangay_captain ? (
-                              barangay.barangay_captain
-                            ) : (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500">N/A</span>
-                            )}
+                            {barangay.barangay_captain || <span className="text-xs text-gray-400 italic">No captain assigned</span>}
                           </div>
                           <div className="text-xs text-gray-500 mt-1">
-                            Health Officer: {barangay.health_officer ? (
-                              barangay.health_officer
-                            ) : (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500">N/A</span>
-                            )}
+                            Health Officer: {barangay.health_officer || <span className="text-xs text-gray-400 italic">N/A</span>}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-1 text-sm text-gray-900">
                           <Phone className="w-4 h-4 text-gray-400" />
-                          {barangay.contact_number ? (
-                            barangay.contact_number
-                          ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500">N/A</span>
-                          )}
+                          {barangay.contact_number || <span className="text-xs text-gray-400 italic">N/A</span>}
                         </div>
                       </td>
                       <td className="px-6 py-5">
                         <div className="text-sm font-medium text-gray-900">
-                          {barangay.population ? (
-                            barangay.population.toLocaleString()
-                          ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500">N/A</span>
-                          )}
+                          {barangay.population ? barangay.population.toLocaleString() : <span className="text-xs text-gray-400 italic">N/A</span>}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
                           M: {barangay.population_male || 0} / F: {barangay.population_female || 0}
@@ -370,13 +369,13 @@ const ManageBarangay: React.FC = () => {
                         <div className="flex items-center justify-end gap-1">
                           <button 
                             onClick={() => handleView(barangay)} 
-                            className="p-2.5 text-blue-600 hover:bg-blue-100 rounded-xl transition-all duration-200"
+                            className="p-2.5 text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
                           <button 
                             onClick={() => handleEdit(barangay)} 
-                            className="p-2.5 text-emerald-600 hover:bg-emerald-100 rounded-xl transition-all duration-200"
+                            className="p-2.5 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all duration-200"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
@@ -393,252 +392,284 @@ const ManageBarangay: React.FC = () => {
 
       {/* View Modal */}
       {showViewModal && selectedBarangay && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-gradient-to-r from-emerald-500 to-green-600 text-white p-6 flex justify-between items-center rounded-t-lg z-10">
-              <h2 className="text-2xl font-bold">Barangay Details</h2>
-              <button onClick={() => setShowViewModal(false)} className="hover:bg-white/20 p-2 rounded">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+          >
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center rounded-t-2xl z-10">
+              <h2 className="text-2xl font-bold text-gray-900 border-l-4 border-emerald-500 pl-4">Barangay Details</h2>
+              <button 
+                onClick={() => setShowViewModal(false)} 
+                className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-xl transition-all duration-200"
+              >
                 <X size={24} />
               </button>
             </div>
 
             <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-4 bg-gradient-to-r from-emerald-50 to-green-100 rounded-lg">
-                  <h3 className="text-sm font-semibold text-emerald-700 mb-2">Barangay Name</h3>
-                  <p className="text-gray-900 font-medium">{selectedBarangay.name}</p>
+              {/* Avatar and Name Section */}
+              <div className="flex flex-col items-center mb-6 pb-6 border-b border-gray-200">
+                <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-teal-500 text-white font-bold rounded-full flex items-center justify-center text-3xl mb-4">
+                  {selectedBarangay.name?.charAt(0)}
                 </div>
-
-                <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
-                  <h3 className="text-sm font-semibold text-blue-700 mb-2">Address</h3>
-                  <p className="text-gray-900">{selectedBarangay.address || 'N/A'}</p>
-                </div>
-
-                <div className="p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg">
-                  <h3 className="text-sm font-semibold text-purple-700 mb-2">Barangay Captain</h3>
-                  <p className="text-gray-900">{selectedBarangay.barangay_captain || 'N/A'}</p>
-                </div>
-
-                <div className="p-4 bg-gradient-to-r from-pink-50 to-pink-100 rounded-lg">
-                  <h3 className="text-sm font-semibold text-pink-700 mb-2">Health Officer</h3>
-                  <p className="text-gray-900">{selectedBarangay.health_officer || 'N/A'}</p>
-                </div>
-
-                <div className="p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg">
-                  <h3 className="text-sm font-semibold text-yellow-700 mb-2">Contact Number</h3>
-                  <p className="text-gray-900">{selectedBarangay.contact_number || 'N/A'}</p>
-                </div>
-
-                <div className="p-4 bg-gradient-to-r from-teal-50 to-teal-100 rounded-lg">
-                  <h3 className="text-sm font-semibold text-teal-700 mb-2">Coverage Area</h3>
-                  <p className="text-gray-900">{selectedBarangay.coverage_area || 'N/A'}</p>
-                </div>
-
-                <div className="p-4 bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-lg">
-                  <h3 className="text-sm font-semibold text-indigo-700 mb-2">Total Population</h3>
-                  <p className="text-gray-900 text-2xl font-bold">{selectedBarangay.population?.toLocaleString() || 'N/A'}</p>
-                </div>
-
-                <div className="p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg">
-                  <h3 className="text-sm font-semibold text-orange-700 mb-2">Population Breakdown</h3>
-                  <div className="space-y-1 text-sm">
-                    <p className="text-gray-900">Male: {selectedBarangay.population_male?.toLocaleString() || 'N/A'}</p>
-                    <p className="text-gray-900">Female: {selectedBarangay.population_female?.toLocaleString() || 'N/A'}</p>
-                    <p className="text-gray-900">Children: {selectedBarangay.population_children?.toLocaleString() || 'N/A'}</p>
-                  </div>
-                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                  {selectedBarangay.name}
+                </h3>
+                <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-700">
+                  <MapPin className="w-4 h-4" />
+                  Barangay
+                </span>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Edit Modal */}
-      {showEditModal && selectedBarangay && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-gradient-to-r from-emerald-500 to-green-600 text-white p-6 flex justify-between items-center rounded-t-lg z-10">
-              <h2 className="text-2xl font-bold">Edit Barangay</h2>
-              <button onClick={() => setShowEditModal(false)} className="hover:bg-white/20 p-2 rounded">
-                <X size={24} />
-              </button>
-            </div>
+              {/* Info Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Address</p>
+                  <p className="text-sm font-medium text-gray-900">{selectedBarangay.address || 'N/A'}</p>
+                </div>
 
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-green-100 rounded-lg">
-                <h3 className="text-lg font-semibold text-emerald-700 mb-4">Basic Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Barangay Name *</label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 ${
-                        errors.name ? 'border-red-300' : 'border-gray-300'
-                      }`}
-                    />
-                    {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-                  </div>
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Contact Number</p>
+                  <p className="text-sm font-medium text-gray-900">{selectedBarangay.contact_number || 'N/A'}</p>
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                    <input
-                      type="text"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Barangay Captain</p>
+                  <p className="text-sm font-medium text-gray-900">{selectedBarangay.barangay_captain || 'N/A'}</p>
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
-                    <input
-                      type="text"
-                      name="contact_number"
-                      value={formData.contact_number}
-                      onChange={handleInputChange}
-                      placeholder="09XXXXXXXXX"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Health Officer</p>
+                  <p className="text-sm font-medium text-gray-900">{selectedBarangay.health_officer || 'N/A'}</p>
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Coverage Area</label>
-                    <input
-                      type="text"
-                      name="coverage_area"
-                      value={formData.coverage_area}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                    />
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Coverage Area</p>
+                  <p className="text-sm font-medium text-gray-900">{selectedBarangay.coverage_area || 'N/A'}</p>
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Total Population</p>
+                  <p className="text-sm font-medium text-gray-900">{selectedBarangay.population?.toLocaleString() || 'N/A'}</p>
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 md:col-span-2">
+                  <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Population Breakdown</p>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-xs text-gray-500">Male</p>
+                      <p className="text-lg font-bold text-gray-900">{selectedBarangay.population_male?.toLocaleString() || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Female</p>
+                      <p className="text-lg font-bold text-gray-900">{selectedBarangay.population_female?.toLocaleString() || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Children</p>
+                      <p className="text-lg font-bold text-gray-900">{selectedBarangay.population_children?.toLocaleString() || 'N/A'}</p>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
-                <h3 className="text-lg font-semibold text-blue-700 mb-4">Officials</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Barangay Captain</label>
-                    <input
-                      type="text"
-                      name="barangay_captain"
-                      value={formData.barangay_captain}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Health Officer</label>
-                    <input
-                      type="text"
-                      name="health_officer"
-                      value={formData.health_officer}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg">
-                <h3 className="text-lg font-semibold text-purple-700 mb-4">Population Data</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Total Population</label>
-                    <input
-                      type="number"
-                      name="population"
-                      value={formData.population}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Male Population</label>
-                    <input
-                      type="number"
-                      name="population_male"
-                      value={formData.population_male}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Female Population</label>
-                    <input
-                      type="number"
-                      name="population_female"
-                      value={formData.population_female}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Children Population</label>
-                    <input
-                      type="number"
-                      name="population_children"
-                      value={formData.population_children}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 mt-6">
+              {/* Close Button */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
                 <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-lg hover:from-emerald-600 hover:to-green-700"
-                >
-                  Update Barangay
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Filters Modal */}
-      {showFiltersModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-md">
-            <div className="bg-gradient-to-r from-emerald-500 to-green-600 text-white p-6 flex justify-between items-center rounded-t-lg">
-              <h2 className="text-2xl font-bold">Filter Barangays</h2>
-              <button onClick={() => setShowFiltersModal(false)} className="hover:bg-white/20 p-2 rounded">
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="p-6">
-              <p className="text-gray-600 text-center py-8">Filter options coming soon...</p>
-              <div className="flex justify-end gap-3 mt-6">
-                <button
-                  onClick={() => setShowFiltersModal(false)}
-                  className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  onClick={() => setShowViewModal(false)}
+                  className="w-full border border-gray-300 text-gray-600 rounded-xl px-6 py-2.5 font-semibold hover:bg-gray-50 transition-all duration-200"
                 >
                   Close
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
+
+      {/* Edit Modal */}
+      {showEditModal && selectedBarangay && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+          >
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center rounded-t-2xl z-10">
+              <h2 className="text-2xl font-bold text-gray-900 border-l-4 border-emerald-500 pl-4">Edit Barangay</h2>
+              <button 
+                onClick={() => setShowEditModal(false)} 
+                className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-xl transition-all duration-200"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6">
+              <div className="space-y-6">
+                {/* Basic Information Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <Building2 className="w-5 h-5 text-emerald-600" />
+                    Basic Information
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Barangay Name *</label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 ${
+                          errors.name ? 'border-red-300' : 'border-gray-300'
+                        }`}
+                      />
+                      {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Address</label>
+                      <input
+                        type="text"
+                        name="address"
+                        value={formData.address}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Contact Number</label>
+                      <input
+                        type="text"
+                        name="contact_number"
+                        value={formData.contact_number}
+                        onChange={handleInputChange}
+                        placeholder="09XXXXXXXXX"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Coverage Area</label>
+                      <input
+                        type="text"
+                        name="coverage_area"
+                        value={formData.coverage_area}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Officials Section */}
+                <div className="pt-6 border-t border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <User className="w-5 h-5 text-emerald-600" />
+                    Officials
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Barangay Captain</label>
+                      <input
+                        type="text"
+                        name="barangay_captain"
+                        value={formData.barangay_captain}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Health Officer</label>
+                      <input
+                        type="text"
+                        name="health_officer"
+                        value={formData.health_officer}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Population Data Section */}
+                <div className="pt-6 border-t border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <Users className="w-5 h-5 text-emerald-600" />
+                    Population Data
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Total Population</label>
+                      <input
+                        type="number"
+                        name="population"
+                        value={formData.population}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Male Population</label>
+                      <input
+                        type="number"
+                        name="population_male"
+                        value={formData.population_male}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Female Population</label>
+                      <input
+                        type="number"
+                        name="population_female"
+                        value={formData.population_female}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Children Population</label>
+                      <input
+                        type="number"
+                        name="population_children"
+                        value={formData.population_children}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="border border-gray-300 text-gray-600 rounded-xl px-6 py-2.5 font-semibold hover:bg-gray-50 transition-all duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-emerald-600 text-white rounded-xl px-6 py-2.5 font-semibold hover:bg-emerald-700 transition-all duration-200 shadow-sm"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
     </AdminLayout>
   );
 };

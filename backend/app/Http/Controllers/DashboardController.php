@@ -158,20 +158,22 @@ class DashboardController extends Controller
 
             $activities = [];
 
+            // Immunization records
             if (DB::getSchemaBuilder()->hasTable('immunization_records')) {
                 $immunizations = DB::table('immunization_records')
                     ->join('barangays', 'immunization_records.barangay_id', '=', 'barangays.id')
                     ->whereIn('immunization_records.barangay_id', $barangayIds)
+                    ->where('immunization_records.created_by', $user->id)
                     ->select(
                         'immunization_records.id',
-                        'immunization_records.full_name as patient_name',
+                        DB::raw("CONCAT(immunization_records.first_name, ' ', immunization_records.last_name) as patient_name"),
                         'barangays.name as barangay_name',
                         'immunization_records.created_at',
                         DB::raw("'immunization' as type"),
-                        DB::raw("'Immunization Record Added' as title")
+                        DB::raw("'Created immunization record' as title")
                     )
                     ->orderBy('immunization_records.created_at', 'desc')
-                    ->limit(5)
+                    ->limit(10)
                     ->get();
 
                 foreach ($immunizations as $record) {
@@ -179,23 +181,71 @@ class DashboardController extends Controller
                 }
             }
 
-            if (DB::getSchemaBuilder()->hasTable('appointments')) {
-                $appointments = DB::table('appointments')
-                    ->join('barangays', 'appointments.barangay_id', '=', 'barangays.id')
-                    ->whereIn('appointments.barangay_id', $barangayIds)
+            // Maternal care records
+            if (DB::getSchemaBuilder()->hasTable('maternal_care_records')) {
+                $maternalCare = DB::table('maternal_care_records')
+                    ->join('barangays', 'maternal_care_records.barangay_id', '=', 'barangays.id')
+                    ->whereIn('maternal_care_records.barangay_id', $barangayIds)
+                    ->where('maternal_care_records.created_by', $user->id)
                     ->select(
-                        'appointments.id',
-                        'appointments.patient_name',
+                        'maternal_care_records.id',
+                        DB::raw("CONCAT(maternal_care_records.first_name, ' ', maternal_care_records.last_name) as patient_name"),
                         'barangays.name as barangay_name',
-                        'appointments.created_at',
-                        DB::raw("'appointment' as type"),
-                        DB::raw("CONCAT('Appointment Scheduled - ', appointments.appointment_type) as title")
+                        'maternal_care_records.created_at',
+                        DB::raw("'maternal_care' as type"),
+                        DB::raw("'Added maternal care record' as title")
                     )
-                    ->orderBy('appointments.created_at', 'desc')
-                    ->limit(5)
+                    ->orderBy('maternal_care_records.created_at', 'desc')
+                    ->limit(10)
                     ->get();
 
-                foreach ($appointments as $record) {
+                foreach ($maternalCare as $record) {
+                    $activities[] = $record;
+                }
+            }
+
+            // Family planning records
+            if (DB::getSchemaBuilder()->hasTable('family_planning_records')) {
+                $familyPlanning = DB::table('family_planning_records')
+                    ->join('barangays', 'family_planning_records.barangay_id', '=', 'barangays.id')
+                    ->whereIn('family_planning_records.barangay_id', $barangayIds)
+                    ->where('family_planning_records.created_by', $user->id)
+                    ->select(
+                        'family_planning_records.id',
+                        DB::raw("CONCAT(family_planning_records.first_name, ' ', family_planning_records.last_name) as patient_name"),
+                        'barangays.name as barangay_name',
+                        'family_planning_records.created_at',
+                        DB::raw("'family_planning' as type"),
+                        DB::raw("'Updated family planning record' as title")
+                    )
+                    ->orderBy('family_planning_records.created_at', 'desc')
+                    ->limit(10)
+                    ->get();
+
+                foreach ($familyPlanning as $record) {
+                    $activities[] = $record;
+                }
+            }
+
+            // Senior citizen records
+            if (DB::getSchemaBuilder()->hasTable('senior_citizen_records')) {
+                $seniorCitizen = DB::table('senior_citizen_records')
+                    ->join('barangays', 'senior_citizen_records.barangay_id', '=', 'barangays.id')
+                    ->whereIn('senior_citizen_records.barangay_id', $barangayIds)
+                    ->where('senior_citizen_records.created_by', $user->id)
+                    ->select(
+                        'senior_citizen_records.id',
+                        DB::raw("CONCAT(senior_citizen_records.first_name, ' ', senior_citizen_records.last_name) as patient_name"),
+                        'barangays.name as barangay_name',
+                        'senior_citizen_records.created_at',
+                        DB::raw("'senior_citizen' as type"),
+                        DB::raw("'Added senior citizen record' as title")
+                    )
+                    ->orderBy('senior_citizen_records.created_at', 'desc')
+                    ->limit(10)
+                    ->get();
+
+                foreach ($seniorCitizen as $record) {
                     $activities[] = $record;
                 }
             }
@@ -206,7 +256,7 @@ class DashboardController extends Controller
                 });
             }
 
-            return response()->json(array_slice($activities, 0, 10));
+            return response()->json(array_slice($activities, 0, 20));
         } catch (\Exception $e) {
             \Log::error('Dashboard activities error: ' . $e->getMessage());
             return response()->json([]);

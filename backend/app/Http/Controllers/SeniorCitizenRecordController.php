@@ -35,7 +35,7 @@ class SeniorCitizenRecordController extends Controller
             });
         }
 
-        $records = $query->orderBy('created_at', 'desc')->paginate(15);
+        $records = $query->orderBy('created_at', 'desc')->paginate(20);
 
         return response()->json($records);
     }

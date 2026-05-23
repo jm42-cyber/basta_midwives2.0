@@ -37,8 +37,7 @@ class ReportController extends Controller
     public function getMidwives(Request $request)
     {
         $query = User::where('role', 'midwife')
-            ->where('status', 'approved')
-            ->select('users.id', 'users.first_name', 'users.middle_name', 'users.last_name');
+            ->select('users.id', 'users.first_name', 'users.middle_name', 'users.last_name', 'users.email', 'users.contact_number', 'users.status', 'users.created_at');
 
         // Filter by barangay IDs if provided
         if ($request->has('barangay_ids') && !empty($request->barangay_ids)) {
@@ -58,8 +57,13 @@ class ReportController extends Controller
                 'first_name' => $midwife->first_name,
                 'middle_name' => $midwife->middle_name,
                 'last_name' => $midwife->last_name,
+                'email' => $midwife->email,
+                'contact_number' => $midwife->contact_number,
+                'status' => $midwife->status,
+                'created_at' => $midwife->created_at,
                 'barangay_id' => $midwife->barangays->first()->id ?? null,
                 'barangay_name' => $midwife->barangays->first()->name ?? 'N/A',
+                'barangays' => $midwife->barangays,
             ];
         });
 
@@ -526,7 +530,12 @@ class ReportController extends Controller
     {
         $sheet->fromArray($headers, null, $startCell);
         
-        $lastColumn = chr(64 + count($headers));
+        $columnCount = count($headers);
+        if ($columnCount <= 26) {
+            $lastColumn = chr(64 + $columnCount);
+        } else {
+            $lastColumn = chr(64 + floor(($columnCount - 1) / 26)) . chr(65 + (($columnCount - 1) % 26));
+        }
         $headerRange = 'A1:' . $lastColumn . '1';
         
         $sheet->getStyle($headerRange)->applyFromArray([
@@ -560,7 +569,11 @@ class ReportController extends Controller
     private function autoSizeColumns($sheet, $columnCount)
     {
         for ($i = 1; $i <= $columnCount; $i++) {
-            $column = chr(64 + $i);
+            if ($i <= 26) {
+                $column = chr(64 + $i);
+            } else {
+                $column = chr(64 + floor(($i - 1) / 26)) . chr(65 + (($i - 1) % 26));
+            }
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
     }
