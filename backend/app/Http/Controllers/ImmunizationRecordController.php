@@ -26,6 +26,16 @@ class ImmunizationRecordController extends Controller
             $query->whereIn('barangay_id', $barangayIds);
         }
 
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('middle_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('mother_name', 'like', "%{$search}%");
+            });
+        }
+
         if ($request->has('status')) {
             $query->where('status', $request->status);
         }
@@ -38,7 +48,8 @@ class ImmunizationRecordController extends Controller
             $query->whereBetween('created_at', [$request->start_date, $request->end_date]);
         }
 
-        $records = $query->latest()->paginate(20);
+        $perPage = $request->get('per_page', 20);
+        $records = $query->latest()->paginate($perPage);
         return response()->json($records);
     }
 

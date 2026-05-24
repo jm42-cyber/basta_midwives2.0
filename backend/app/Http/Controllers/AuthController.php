@@ -173,4 +173,14 @@ class AuthController extends Controller
             'valid' => true
         ]);
     }
+
+    public function getUserBarangays(Request $request)
+    {
+        $user = $request->user();
+        $barangays = $user->barangays;
+
+        return response()->json([
+            'barangays' => $barangays
+        ]);
+    }
 }

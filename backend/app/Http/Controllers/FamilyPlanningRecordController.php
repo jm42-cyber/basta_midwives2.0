@@ -26,7 +26,7 @@ class FamilyPlanningRecordController extends Controller
             $query->where('barangay_id', $request->barangay_id);
         }
 
-        if ($request->has('search')) {
+        if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
@@ -35,7 +35,8 @@ class FamilyPlanningRecordController extends Controller
             });
         }
 
-        $records = $query->orderBy('created_at', 'desc')->paginate(15);
+        $perPage = $request->get('per_page', 20);
+        $records = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json($records);
     }

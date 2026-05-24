@@ -18,20 +18,18 @@ class MaternalCareRecordController extends Controller
     {
         $query = MaternalCareRecord::with(['barangay', 'creator']);
 
-        // Allow filtering by status
         if ($request->has('status')) {
             $query->where('status', $request->status);
         } else {
-            // Default to active if no status specified
             $query->where('status', 'active');
         }
 
-        if ($request->has('search')) {
+        if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('contact_no', 'like', "%{$search}%");
+                  ->orWhere('middle_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%");
             });
         }
 
@@ -39,8 +37,7 @@ class MaternalCareRecordController extends Controller
             $query->where('barangay_id', $request->barangay_id);
         }
 
-        // Use pagination instead of get()
-        $perPage = $request->get('per_page', 15); // Default 15 records per page
+        $perPage = $request->get('per_page', 20);
         $records = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json($records);
