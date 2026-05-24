@@ -66,7 +66,8 @@ export default function ArchivePage() {
 
       const immunizationCount = immunizationRes.data.data.length;
       const familyPlanningCount = familyPlanningRes.data.data.length;
-      const maternalCount = maternalRes.length;
+      const maternalData = Array.isArray(maternalRes) ? maternalRes : (maternalRes?.data?.data || []);
+      const maternalCount = maternalData.length;
       const seniorCount = seniorRes.data.data.length;
 
       setStats({
@@ -98,7 +99,11 @@ export default function ArchivePage() {
           data = familyPlanningResponse.data.data;
           break;
         case 'maternal':
-          data = await maternalCareService.getAll(params);
+          const maternalResponse = await maternalCareService.getAll(params);
+          // Handle both direct array and {data: []} response formats
+          data = Array.isArray(maternalResponse) 
+            ? maternalResponse 
+            : (maternalResponse?.data?.data || maternalResponse?.data || []);
           break;
         case 'senior':
           const seniorResponse = await seniorCitizenService.getAll(params);
@@ -335,31 +340,31 @@ export default function ArchivePage() {
         </div>
 
         {/* Stats Bar */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-          <div className="bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-xl p-4 shadow-md">
-            <div className="text-sm opacity-90 mb-1">Total Archived</div>
+        <div className="grid grid-cols-2 gap-4 mb-6 md:grid-cols-5">
+          <div className="p-4 text-white shadow-md bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl">
+            <div className="mb-1 text-sm opacity-90">Total Archived</div>
             <div className="text-3xl font-bold">{stats.total}</div>
           </div>
-          <div className="bg-gradient-to-br from-teal-500 to-teal-600 text-white rounded-xl p-4 shadow-md">
-            <div className="text-sm opacity-90 mb-1">Immunization</div>
+          <div className="p-4 text-white shadow-md bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl">
+            <div className="mb-1 text-sm opacity-90">Immunization</div>
             <div className="text-3xl font-bold">{stats.immunization}</div>
           </div>
-          <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl p-4 shadow-md">
-            <div className="text-sm opacity-90 mb-1">Maternal Care</div>
+          <div className="p-4 text-white shadow-md bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl">
+            <div className="mb-1 text-sm opacity-90">Maternal Care</div>
             <div className="text-3xl font-bold">{stats.maternal}</div>
           </div>
-          <div className="bg-gradient-to-br from-emerald-600 to-green-700 text-white rounded-xl p-4 shadow-md">
-            <div className="text-sm opacity-90 mb-1">Family Planning</div>
+          <div className="p-4 text-white shadow-md bg-gradient-to-br from-emerald-600 to-green-700 rounded-xl">
+            <div className="mb-1 text-sm opacity-90">Family Planning</div>
             <div className="text-3xl font-bold">{stats.family_planning}</div>
           </div>
-          <div className="bg-gradient-to-br from-cyan-500 to-teal-600 text-white rounded-xl p-4 shadow-md">
-            <div className="text-sm opacity-90 mb-1">Senior Citizen</div>
+          <div className="p-4 text-white shadow-md bg-gradient-to-br from-cyan-500 to-teal-600 rounded-xl">
+            <div className="mb-1 text-sm opacity-90">Senior Citizen</div>
             <div className="text-3xl font-bold">{stats.senior}</div>
           </div>
         </div>
 
         {/* Program Tabs */}
-        <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
+        <div className="flex gap-3 pb-2 mb-6 overflow-x-auto">
           {programOptions.map((program) => {
             const Icon = program.icon;
             return (
@@ -380,16 +385,16 @@ export default function ArchivePage() {
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6 shadow-sm">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <div className="p-6 mb-6 bg-white border border-gray-200 shadow-sm rounded-2xl">
+          <div className="flex flex-col gap-4 md:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-4 top-1/2" />
               <input
                 type="text"
                 placeholder="Search by name or barangay..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+                className="w-full py-3 pl-12 pr-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent"
               />
             </div>
             <button
@@ -411,11 +416,11 @@ export default function ArchivePage() {
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className="mt-4 pt-4 border-t border-gray-200"
+                className="pt-4 mt-4 border-t border-gray-200"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block mb-2 text-sm font-medium text-gray-700">
                       Filter by Barangay
                     </label>
                     <CustomSelect
@@ -449,7 +454,7 @@ export default function ArchivePage() {
         </div>
 
         {/* Records Table */}
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="overflow-hidden bg-white border border-gray-200 shadow-sm rounded-2xl">
           {loading ? (
             <div className="p-16 text-center">
               <div className="inline-flex items-center gap-3 text-gray-500">
@@ -463,7 +468,7 @@ export default function ArchivePage() {
                 <Archive className="w-8 h-8 text-gray-400" />
               </div>
               <p className="text-lg text-gray-500">No archived records found</p>
-              <p className="text-sm text-gray-400 mt-2">Archived records will appear here</p>
+              <p className="mt-2 text-sm text-gray-400">Archived records will appear here</p>
             </div>
           ) : (
             <>
@@ -557,21 +562,21 @@ export default function ArchivePage() {
                             <div className="flex items-center justify-center gap-2">
                               <button
                                 onClick={() => handleViewRecord(record)}
-                                className="p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
+                                className="p-2 text-green-700 transition-colors bg-green-100 rounded-lg hover:bg-green-200"
                                 title="View"
                               >
                                 <Eye className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleRestore(record.id)}
-                                className="p-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-lg hover:from-emerald-600 hover:to-green-700 transition-colors shadow-md"
+                                className="p-2 text-white transition-colors rounded-lg shadow-md bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
                                 title="Restore"
                               >
                                 <ArchiveRestore className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => setDeleteConfirmId(record.id)}
-                                className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                                className="p-2 text-red-700 transition-colors bg-red-100 rounded-lg hover:bg-red-200"
                                 title="Delete"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -594,7 +599,7 @@ export default function ArchivePage() {
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="p-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 text-gray-600 transition-colors rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
@@ -642,7 +647,7 @@ export default function ArchivePage() {
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="p-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 text-gray-600 transition-colors rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>
@@ -691,7 +696,7 @@ export default function ArchivePage() {
               <div className="p-6 space-y-6">
                 {/* Personal Information */}
                 <div className="p-4 bg-gray-50 rounded-xl">
-                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <h3 className="flex items-center gap-2 mb-3 font-semibold text-gray-900">
                     <User className="w-5 h-5" />
                     Personal Information
                   </h3>
@@ -721,7 +726,7 @@ export default function ArchivePage() {
 
                 {/* Parent Information */}
                 <div className="p-4 bg-gray-50 rounded-xl">
-                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <h3 className="flex items-center gap-2 mb-3 font-semibold text-gray-900">
                     <Users className="w-5 h-5" />
                     Parent/Guardian
                   </h3>
@@ -739,7 +744,7 @@ export default function ArchivePage() {
 
                 {/* Contact Information */}
                 <div className="p-4 bg-gray-50 rounded-xl">
-                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <h3 className="flex items-center gap-2 mb-3 font-semibold text-gray-900">
                     <MapPin className="w-5 h-5" />
                     Contact & Location
                   </h3>
@@ -759,7 +764,7 @@ export default function ArchivePage() {
               <div className="p-6 border-t border-gray-200 bg-gray-50">
                 <button
                   onClick={() => setShowViewModal(false)}
-                  className="w-full px-6 py-3 bg-gray-700 text-white rounded-xl hover:bg-gray-800 font-semibold transition-colors"
+                  className="w-full px-6 py-3 font-semibold text-white transition-colors bg-gray-700 rounded-xl hover:bg-gray-800"
                 >
                   Close
                 </button>
@@ -789,10 +794,10 @@ export default function ArchivePage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+              className="w-full max-w-md p-6 bg-white shadow-2xl rounded-2xl"
             >
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100">
                   <ArchiveRestore className="w-6 h-6 text-emerald-600" />
                 </div>
                 <div>
@@ -801,12 +806,12 @@ export default function ArchivePage() {
                 </div>
               </div>
               
-              <p className="text-gray-700 mb-6">
+              <p className="mb-6 text-gray-700">
                 This will restore all {filteredRecords.length} archived record(s). This action cannot be undone.
               </p>
               
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block mb-2 text-sm font-medium text-gray-700">
                   Enter your password to confirm
                 </label>
                 <input
@@ -831,7 +836,7 @@ export default function ArchivePage() {
                   }`}
                 />
                 {restorePasswordError && (
-                  <p className="text-red-600 text-sm mt-2 flex items-center gap-2">
+                  <p className="flex items-center gap-2 mt-2 text-sm text-red-600">
                     <AlertTriangle className="w-4 h-4" />
                     {restorePasswordError}
                   </p>
@@ -846,14 +851,14 @@ export default function ArchivePage() {
                     setRestorePasswordError('');
                     setIsRestoring(false);
                   }}
-                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                  className="flex-1 px-4 py-3 font-semibold text-gray-700 transition-colors bg-gray-100 rounded-xl hover:bg-gray-200"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleRestoreAllConfirm}
                   disabled={!restorePassword || isRestoring}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl font-semibold hover:from-emerald-600 hover:to-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                  className="flex-1 px-4 py-3 font-semibold text-white transition-colors shadow-lg bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl hover:from-emerald-600 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isRestoring ? 'Restoring...' : 'Restore All'}
                 </button>
@@ -878,10 +883,10 @@ export default function ArchivePage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+              className="w-full max-w-md p-6 bg-white shadow-2xl rounded-2xl"
             >
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full">
                   <AlertTriangle className="w-6 h-6 text-red-600" />
                 </div>
                 <div>
@@ -890,20 +895,20 @@ export default function ArchivePage() {
                 </div>
               </div>
               
-              <p className="text-gray-700 mb-6">
+              <p className="mb-6 text-gray-700">
                 Are you sure you want to permanently delete this record? This will remove all data and cannot be recovered.
               </p>
               
               <div className="flex gap-3">
                 <button
                   onClick={() => setDeleteConfirmId(null)}
-                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                  className="flex-1 px-4 py-3 font-semibold text-gray-700 transition-colors bg-gray-100 rounded-xl hover:bg-gray-200"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => handleDelete(deleteConfirmId)}
-                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors"
+                  className="flex-1 px-4 py-3 font-semibold text-white transition-colors bg-red-600 rounded-xl hover:bg-red-700"
                 >
                   Delete Forever
                 </button>

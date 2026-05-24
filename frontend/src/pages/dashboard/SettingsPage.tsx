@@ -99,14 +99,22 @@ export default function SettingsPage() {
     }
     
     setChangingPassword(true);
-    // TODO: Implement API call
-    setTimeout(() => {
+    try {
+      await api.post('/change-password', {
+        current_password: currentPassword,
+        new_password: newPassword,
+        new_password_confirmation: confirmPassword,
+      });
       toast.success('Password changed successfully!');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+    } catch (error: any) {
+      console.error('Password change error:', error);
+      toast.error(error.response?.data?.message || 'Failed to change password');
+    } finally {
       setChangingPassword(false);
-    }, 1000);
+    }
   };
 
   const handleBarangayChange = async () => {

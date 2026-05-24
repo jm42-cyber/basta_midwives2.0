@@ -183,4 +183,43 @@ class AuthController extends Controller
             'barangays' => $barangays
         ]);
     }
+
+    public function changePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $user = $request->user();
+
+        // Verify current password
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'message' => 'Current password is incorrect'
+            ], 401);
+        }
+
+        // Update password
+        $user->update([
+            'password' => Hash::make($request->new_password)
+        ]);
+
+        // Create audit log
+        AuditLog::create([
+            'user_id' => $user->id,
+            'action' => 'Password changed',
+            'table_name' => 'users',
+            'record_id' => $user->id,
+            'timestamp' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Password changed successfully'
+        ]);
+    }
 }
