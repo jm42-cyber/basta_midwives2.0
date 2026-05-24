@@ -130,9 +130,12 @@ const MaternalCareDashboardPage: React.FC = () => {
     try {
       setLoading(true);
       const data = await maternalCareService.getAll();
-      setRecords(data);
+      // Ensure data is an array
+      const recordsArray = Array.isArray(data) ? data : (data?.data ? data.data : []);
+      setRecords(recordsArray);
     } catch (error) {
       console.error('Error fetching records:', error);
+      setRecords([]);
     } finally {
       setLoading(false);
     }

@@ -81,7 +81,7 @@ export default function AllPatientsPage() {
       const allPatients: PatientRecord[] = [
         ...immunization.data.data.map((r: any) => ({ ...r, program: 'Immunization' as const })),
         ...familyPlanning.data.data.map((r: any) => ({ ...r, program: 'Family Planning' as const })),
-        ...maternalCare.map((r: any) => ({ ...r, program: 'Maternal Care' as const })),
+        ...(Array.isArray(maternalCare.data) ? maternalCare.data : maternalCare.data.data).map((r: any) => ({ ...r, program: 'Maternal Care' as const })),
         ...seniorCitizen.data.data.map((r: any) => ({ ...r, program: 'Senior Citizen' as const })),
       ];
 
@@ -92,7 +92,7 @@ export default function AllPatientsPage() {
         total: allPatients.length,
         immunization: immunization.data.data.length,
         familyPlanning: familyPlanning.data.data.length,
-        maternalCare: maternalCare.length,
+        maternalCare: (Array.isArray(maternalCare.data) ? maternalCare.data : maternalCare.data.data).length,
         seniorCitizen: seniorCitizen.data.data.length,
       });
     } catch (error) {

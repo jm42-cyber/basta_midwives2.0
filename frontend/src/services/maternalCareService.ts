@@ -20,7 +20,9 @@ api.interceptors.request.use((config) => {
 
 export const maternalCareService = {
   getAll: async (params?: { search?: string; barangay_id?: number }) => {
-    const response = await api.get<MaternalCareRecord[]>('/maternal-care-records', { params });
+    const response = await api.get<MaternalCareRecord[]>('/maternal-care-records', { 
+      params: { ...params, per_page: 10000 } // Get all records
+    });
     return response.data;
   },
 
